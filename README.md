@@ -75,6 +75,12 @@
         let spinTime = 0;
         let spinTimeTotal = 0;
 
+        let spinCount = 0; // Track the number of spins
+        const maxSpins = 3; // Maximum spins allowed
+        const lockoutTime = 60 * 60 * 1000; // 1 hour in milliseconds
+        const secretCode = "SecretCode123";
+        let lastSpinTime = null;
+
         const canvas = document.getElementById("wheelCanvas");
         const ctx = canvas.getContext("2d");
 
@@ -88,8 +94,6 @@
 
         window.addEventListener('resize', resizeCanvas);
         window.addEventListener('load', resizeCanvas);
-
-        const secretCode = "SecretCode123";
 
         function drawWheel() {
             const radius = canvas.width / 2;
@@ -133,16 +137,14 @@
             const prize = segments[index];
 
             if (prize.startsWith("Prize 1")) {
-                if (confirm("You won Prize 1! Click OK to copy the secret code.")) {
-                    navigator.clipboard.writeText(secretCode)
-                        .then(() => {
-                            alert("Secret Code copied to clipboard!");
-                        })
-                        .catch(err => {
-                            console.error("Error copying secret code: ", err);
-                            alert("Failed to copy the secret code.");
-                        });
-                }
+                navigator.clipboard.writeText(secretCode)
+                    .then(() => {
+                        alert("Secret Code copied to clipboard!");
+                    })
+                    .catch(err => {
+                        console.error("Error copying secret code: ", err);
+                        alert("Failed to copy the secret code.");
+                    });
             }
 
             document.getElementById("result").textContent = `Congratulations! You won ${prize}`;
@@ -156,10 +158,28 @@
         }
 
         function spinWheel() {
+            // Check if lockout period is active
+            if (lastSpinTime && Date.now() - lastSpinTime < lockoutTime) {
+                alert("You have reached the spin limit! Please wait an hour before trying again.");
+                return;
+            }
+
+            // Reset the spin count after 1 hour
+            if (lastSpinTime && Date.now() - lastSpinTime >= lockoutTime) {
+                spinCount = 0;
+            }
+
+            if (spinCount >= maxSpins) {
+                alert("You have reached the spin limit! Please wait an hour before trying again.");
+                return;
+            }
+
             spinAngleStart = Math.random() * 10 + 10;
             spinTime = 0;
             spinTimeTotal = Math.random() * 3000 + 4000;
             document.getElementById("spinButton").disabled = true;
+            spinCount++;
+            lastSpinTime = Date.now();
             rotateWheel();
         }
 
