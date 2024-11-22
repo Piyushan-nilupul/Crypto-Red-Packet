@@ -40,6 +40,8 @@
             color: white;
             cursor: pointer;
             border-radius: 5px;
+            position: absolute;
+            bottom: 50px;  /* Position button at the bottom of the wheel */
         }
 
         #spinButton:disabled {
