@@ -20,6 +20,8 @@
             background-color: #34495e;
             border-radius: 50%;
             margin-bottom: 20px;
+            max-width: 90vmin; /* Use viewport units for responsive size */
+            max-height: 90vmin; /* Responsive height */
         }
 
         #spinButton {
@@ -40,11 +42,12 @@
             margin-top: 20px;
             font-size: 24px;
             font-weight: bold;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <canvas id="wheelCanvas" width="500" height="500"></canvas>
+    <canvas id="wheelCanvas"></canvas>
     <button id="spinButton" onclick="spinWheel()">Spin the Wheel!</button>
     <div id="result"></div>
 
@@ -75,22 +78,35 @@
         const canvas = document.getElementById("wheelCanvas");
         const ctx = canvas.getContext("2d");
 
+        // Responsive canvas size setup
+        function resizeCanvas() {
+            const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+            canvas.width = size;
+            canvas.height = size;
+            drawWheel();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', resizeCanvas);
+
         const secretCode = "SecretCode123";
 
         function drawWheel() {
+            const radius = canvas.width / 2;
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas before drawing
             for (let i = 0; i < segments.length; i++) {
                 const angle = startAngle + i * arcSize;
                 ctx.fillStyle = colors[i];
                 ctx.beginPath();
-                ctx.moveTo(canvas.width / 2, canvas.height / 2);
-                ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, angle, angle + arcSize);
-                ctx.lineTo(canvas.width / 2, canvas.height / 2);
+                ctx.moveTo(radius, radius);
+                ctx.arc(radius, radius, radius, angle, angle + arcSize);
+                ctx.lineTo(radius, radius);
                 ctx.fill();
                 ctx.save();
                 ctx.fillStyle = "white";
                 ctx.translate(
-                    canvas.width / 2 + Math.cos(angle + arcSize / 2) * 150,
-                    canvas.height / 2 + Math.sin(angle + arcSize / 2) * 150
+                    radius + Math.cos(angle + arcSize / 2) * (radius - 50),
+                    radius + Math.sin(angle + arcSize / 2) * (radius - 50)
                 );
                 ctx.rotate(angle + arcSize / 2 + Math.PI / 2);
                 ctx.fillText(segments[i], -ctx.measureText(segments[i]).width / 2, 0);
