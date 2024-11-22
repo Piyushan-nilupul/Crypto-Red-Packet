@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winning Spin Wheel with Secret Code</title>
+    <title>Crypto Red Packet Spin Wheel</title>
     <style>
         body {
             display: flex;
@@ -14,6 +14,14 @@
             margin: 0;
             flex-direction: column;
             color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        #banner {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #f39c12;
         }
 
         #wheelCanvas {
@@ -32,32 +40,26 @@
             color: white;
             cursor: pointer;
             border-radius: 5px;
-            margin-top: 20px;
         }
 
         #spinButton:disabled {
             background-color: #95a5a6;
         }
 
-        #result {
+        #result, #timer {
             margin-top: 20px;
             font-size: 24px;
             font-weight: bold;
             text-align: center;
         }
-
-        #countdown {
-            font-size: 20px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
-    <div id="countdown"></div>
+    <div id="banner">Crypto Red Packet</div>
     <canvas id="wheelCanvas"></canvas>
     <button id="spinButton" onclick="spinWheel()">Spin the Wheel!</button>
     <div id="result"></div>
+    <div id="timer"></div>
 
     <script>
         const segments = [
@@ -82,34 +84,15 @@
         let spinAngleStart = 10;
         let spinTime = 0;
         let spinTimeTotal = 0;
-        let spinAttempts = 3; // Allow only 3 spins
-        let timeoutSet = false; // Track if timeout is set
-        let countdownTime = 3600; // 1 hour countdown in seconds
+        let spinCount = 0;
+        const maxSpins = 3;
+        const cooldownTime = 60 * 60 * 1000; // 1 hour in milliseconds
+        let lastSpinTime = 0;
 
         const canvas = document.getElementById("wheelCanvas");
         const ctx = canvas.getContext("2d");
 
-        const secretCode = "SecretCode123";
-        
-        function updateCountdown() {
-            let hours = Math.floor(countdownTime / 3600);
-            let minutes = Math.floor((countdownTime % 3600) / 60);
-            let seconds = countdownTime % 60;
-
-            document.getElementById("countdown").textContent = 
-                `Time until next spin: ${hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-
-            if (countdownTime > 0) {
-                countdownTime--;
-            } else {
-                clearInterval(countdownInterval); // Stop countdown after reaching zero
-                timeoutSet = false; // Reset timeout
-                document.getElementById("spinButton").disabled = false; // Re-enable button
-            }
-        }
-
-        let countdownInterval = setInterval(updateCountdown, 1000); // Start countdown
-
+        // Responsive canvas size setup
         function resizeCanvas() {
             const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
             canvas.width = size;
@@ -119,6 +102,8 @@
 
         window.addEventListener('resize', resizeCanvas);
         window.addEventListener('load', resizeCanvas);
+
+        const secretCode = "SecretCode123";
 
         function drawWheel() {
             const radius = canvas.width / 2;
@@ -161,8 +146,7 @@
             const index = Math.floor((360 - (degrees % 360)) / arcd);
             const prize = segments[index];
 
-            // Check for Prize 1 and copy the secret code
-            if (prize === "Prize 1 (Click to Copy Secret Code)") {
+            if (prize.startsWith("Prize 1")) {
                 if (confirm("You won Prize 1! Click OK to copy the secret code.")) {
                     navigator.clipboard.writeText(secretCode)
                         .then(() => {
@@ -173,12 +157,15 @@
                             alert("Failed to copy the secret code.");
                         });
                 }
-                document.getElementById("result").textContent = `Congratulations! You won ${prize}`;
             } else {
-                document.getElementById("result").textContent = `Oops! Try again. You won ${prize}`;
+                alert("Oops, try again!");
             }
 
-            document.getElementById("spinButton").disabled = false; // Re-enable the spin button
+            document.getElementById("result").textContent = `Congratulations! You won ${prize}`;
+            document.getElementById("spinButton").disabled = false;
+            spinCount++;
+            lastSpinTime = Date.now();
+            updateCooldownTimer();
         }
 
         function easeOut(t, b, c, d) {
@@ -188,20 +175,32 @@
         }
 
         function spinWheel() {
-            if (spinAttempts > 0 && !timeoutSet) {
-                spinAttempts--; // Decrease the number of available attempts
-                spinAngleStart = Math.random() * 10 + 10;
-                spinTime = 0;
-                spinTimeTotal = Math.random() * 3000 + 4000;
-                document.getElementById("spinButton").disabled = true;
-                rotateWheel();
-            } else {
-                if (!timeoutSet) {
-                    timeoutSet = true; // Set timeout after 3 attempts
-                    countdownTime = 3600; // 1 hour countdown in seconds
-                    document.getElementById("spinButton").disabled = true; // Disable button
+            if (spinCount >= maxSpins) {
+                const currentTime = Date.now();
+                if (currentTime - lastSpinTime < cooldownTime) {
+                    alert("You have used all spins. Please wait for 1 hour.");
+                    return;
                 }
             }
+
+            spinAngleStart = Math.random() * 10 + 10;
+            spinTime = 0;
+            spinTimeTotal = Math.random() * 3000 + 4000;
+            document.getElementById("spinButton").disabled = true;
+            rotateWheel();
+        }
+
+        // Countdown Timer
+        function updateCooldownTimer() {
+            const remainingTime = cooldownTime - (Date.now() - lastSpinTime);
+            if (remainingTime <= 0) {
+                document.getElementById("timer").textContent = "You can spin again!";
+                return;
+            }
+            const minutes = Math.floor(remainingTime / 1000 / 60);
+            const seconds = Math.floor((remainingTime / 1000) % 60);
+            document.getElementById("timer").textContent = `Time remaining: ${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+            setTimeout(updateCooldownTimer, 1000);
         }
 
         drawWheel();
