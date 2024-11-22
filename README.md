@@ -26,16 +26,18 @@
         }
 
         #spinButton {
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: #27ae60;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-            position: centre;
-            bottom: 20px; /* Position it near the bottom */
-        }
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #27ae60;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    position: absolute;
+    top: 50%; /* Position it vertically in the center */
+    left: 50%; /* Position it horizontally in the center */
+    transform: translate(-50%, -50%); /* Offset the button to truly center it */
+}
 
         #spinButton:disabled {
             background-color: #95a5a6;
