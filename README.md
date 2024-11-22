@@ -1,152 +1,79 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Red Packet</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-        }
+import 'package:flutter/material.dart';
+import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
+import 'dart:math';
 
-        h1 {
-            color: #ff4500;
-        }
+void main() {
+  runApp(SpinWheelApp());
+}
 
-        #countdown {
-            font-size: 24px;
-            color: #ff4500;
-            margin-bottom: 20px;
-        }
+class SpinWheelApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Spin Wheel App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: SpinWheelPage(),
+    );
+  }
+}
 
-        #wheel {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-gap: 10px;
-            margin: 20px auto;
-            max-width: 400px;
-        }
+class SpinWheelPage extends StatefulWidget {
+  @override
+  _SpinWheelPageState createState() => _SpinWheelPageState();
+}
 
-        .box {
-            background-color: #ddd;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 16px;
-            cursor: pointer;
-        }
+class _SpinWheelPageState extends State<SpinWheelPage> {
+  // Spin Wheel සදහා Item List එකක් නිර්මාණය කරන්න
+  final List<String> items = [
+    'Prize 1',
+    'Prize 2',
+    'Prize 3',
+    'Prize 4',
+    'Prize 5',
+    'Prize 6',
+  ];
 
-        #spinButton {
-            padding: 10px 20px;
-            margin-top: 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 18px;
-        }
+  // Randomly එකක් තෝරාගැනීම සදහා
+  int selected = 0;
 
-        #spinButton:disabled {
-            background-color: grey;
-            cursor: not-allowed;
-        }
-
-        #note {
-            font-size: 12px;
-            color: grey;
-            margin-top: 10px;
-        }
-
-        #signupButton {
-            padding: 10px 20px;
-            margin-top: 20px;
-            background-color: #008CBA;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 18px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Crypto Red Packet</h1>
-    <div id="countdown">Countdown: 01:00:00</div>
-
-    <div id="wheel">
-        <div class="box" id="box1">Secret Word</div>
-        <div class="box">Box 2</div>
-        <div class="box">Box 3</div>
-        <div class="box">Box 4</div>
-        <div class="box">Box 5</div>
-        <div class="box">Box 6</div>
-        <div class="box">Box 7</div>
-        <div class="box">Box 8</div>
-    </div>
-
-    <button id="spinButton" onclick="spinWheel()">Spin</button>
-    <div id="note">*You have 3 chances to spin. After 3 spins, you must wait 1 hour.</div>
-    <button id="signupButton">Sign Up</button>
-
-    <script>
-        let spinCount = 0;
-        let maxSpins = 3;
-        let countdownInterval;
-
-        function spinWheel() {
-            if (spinCount < maxSpins) {
-                const randomBoxIndex = Math.floor(Math.random() * 8) + 1;
-                const selectedBox = document.getElementById('box' + randomBoxIndex);
-
-                if (selectedBox) {
-                    alert('You selected: ' + selectedBox.textContent);
-
-                    // If the selected box contains the secret word, copy it to clipboard
-                    if (selectedBox.id === 'box1') {
-                        copyToClipboard(selectedBox.textContent);
-                        alert('Secret word copied to clipboard!');
-                    }
-
-                    spinCount++;
-                }
-
-                // Disable the button after 3 spins
-                if (spinCount >= maxSpins) {
-                    document.getElementById('spinButton').disabled = true;
-                    startCountdown(3600); // 1 hour in seconds
-                }
-            }
-        }
-
-        function copyToClipboard(text) {
-            const tempInput = document.createElement('input');
-            document.body.appendChild(tempInput);
-            tempInput.value = text;
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-        }
-
-        function startCountdown(seconds) {
-            let remainingTime = seconds;
-            countdownInterval = setInterval(() => {
-                if (remainingTime <= 0) {
-                    clearInterval(countdownInterval);
-                    document.getElementById('spinButton').disabled = false;
-                    spinCount = 0;
-                    document.getElementById('countdown').textContent = 'Countdown: 01:00:00';
-                } else {
-                    const hours = Math.floor(remainingTime / 3600);
-                    const minutes = Math.floor((remainingTime % 3600) / 60);
-                    const secs = remainingTime % 60;
-                    document.getElementById('countdown').textContent = `Countdown: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                    remainingTime--;
-                }
-            }, 1000);
-        }
-    </script>
-</body>
-</html>
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Spin Wheel App'),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FortuneWheel(
+            selected: Stream.value(selected),
+            items: [
+              for (var item in items)
+                FortuneItem(
+                  child: Text(item),
+                ),
+            ],
+            onAnimationEnd: () {
+              // Spin Wheel එක අවසන් වූ විට විමසන්න
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Congratulations! You won: ${items[selected]}')),
+              );
+            },
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              // Spin Wheel එකක් තවත් වරක් හරවන්න
+              setState(() {
+                selected = Random().nextInt(items.length);
+              });
+            },
+            child: Text('Spin'),
+          ),
+        ],
+      ),
+    );
+  }
+}
