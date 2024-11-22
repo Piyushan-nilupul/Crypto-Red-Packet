@@ -34,9 +34,9 @@
     cursor: pointer;
     border-radius: 5px;
     position: absolute;
-    top: 50%; /* Position it vertically in the center */
+    bottom: 20px; /* Position it just below the wheel */
     left: 50%; /* Position it horizontally in the center */
-    transform: translate(-50%, -50%); /* Offset the button to truly center it */
+    transform: translateX(-50%); /* Offset it horizontally to perfectly center */
 }
 
         #spinButton:disabled {
