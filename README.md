@@ -34,7 +34,7 @@
     cursor: pointer;
     border-radius: 5px;
     position: absolute;
-    bottom: 20px; /* Position it just below the wheel */
+    bottom: 10px; /* Position it just below the wheel */
     left: 50%; /* Position it horizontally in the center */
     transform: translateX(-50%); /* Offset it horizontally to perfectly center */
 }
