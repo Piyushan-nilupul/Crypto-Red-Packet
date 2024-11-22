@@ -16,12 +16,22 @@
             color: white;
         }
 
+        #arrow {
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 40px solid #f39c12; /* Arrow color */
+            position: absolute;
+            top: 10px;
+        }
+
         #wheelCanvas {
             background-color: #34495e;
             border-radius: 50%;
             margin-bottom: 20px;
-            max-width: 90vmin; /* Use viewport units for responsive size */
-            max-height: 90vmin; /* Responsive height */
+            max-width: 90vmin;
+            max-height: 90vmin;
         }
 
         #spinButton {
@@ -47,6 +57,7 @@
     </style>
 </head>
 <body>
+    <div id="arrow"></div>
     <canvas id="wheelCanvas"></canvas>
     <button id="spinButton" onclick="spinWheel()">Spin the Wheel!</button>
     <div id="result"></div>
@@ -74,13 +85,11 @@
         let spinAngleStart = 10;
         let spinTime = 0;
         let spinTimeTotal = 0;
-
-        let spinCount = 0; // Track the number of spins
-        const maxSpins = 3; // Maximum spins allowed
-        const lockoutTime = 60 * 60 * 1000; // 1 hour in milliseconds
+        let spinCount = 0;
+        const maxSpins = 3;
+        const cooldownTime = 60 * 60 * 1000; // 1 hour in milliseconds
+        let cooldownTimeout = null;
         const secretCode = "SecretCode123";
-        let lastSpinTime = null;
-
         const canvas = document.getElementById("wheelCanvas");
         const ctx = canvas.getContext("2d");
 
@@ -97,7 +106,7 @@
 
         function drawWheel() {
             const radius = canvas.width / 2;
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas before drawing
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let i = 0; i < segments.length; i++) {
                 const angle = startAngle + i * arcSize;
                 ctx.fillStyle = colors[i];
@@ -149,6 +158,12 @@
 
             document.getElementById("result").textContent = `Congratulations! You won ${prize}`;
             document.getElementById("spinButton").disabled = false;
+
+            // Spin counter
+            spinCount++;
+            if (spinCount >= maxSpins) {
+                disableSpinButton();
+            }
         }
 
         function easeOut(t, b, c, d) {
@@ -158,19 +173,8 @@
         }
 
         function spinWheel() {
-            // Check if lockout period is active
-            if (lastSpinTime && Date.now() - lastSpinTime < lockoutTime) {
-                alert("You have reached the spin limit! Please wait an hour before trying again.");
-                return;
-            }
-
-            // Reset the spin count after 1 hour
-            if (lastSpinTime && Date.now() - lastSpinTime >= lockoutTime) {
-                spinCount = 0;
-            }
-
             if (spinCount >= maxSpins) {
-                alert("You have reached the spin limit! Please wait an hour before trying again.");
+                alert("You have used all your spins. Please wait an hour.");
                 return;
             }
 
@@ -178,9 +182,16 @@
             spinTime = 0;
             spinTimeTotal = Math.random() * 3000 + 4000;
             document.getElementById("spinButton").disabled = true;
-            spinCount++;
-            lastSpinTime = Date.now();
             rotateWheel();
+        }
+
+        function disableSpinButton() {
+            document.getElementById("spinButton").disabled = true;
+            // Set a cooldown to reset spins after 1 hour
+            cooldownTimeout = setTimeout(() => {
+                spinCount = 0;
+                document.getElementById("spinButton").disabled = false;
+            }, cooldownTime);
         }
 
         drawWheel();
