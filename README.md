@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winning Spin Wheel with Secret Code</title>
+    <title>Winning Spin Wheel with Countdown</title>
     <style>
         body {
             display: flex;
@@ -14,16 +14,7 @@
             margin: 0;
             flex-direction: column;
             color: white;
-        }
-
-        #arrow {
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-bottom: 40px solid #f39c12; /* Arrow color */
-            position: absolute;
-            top: 10px;
+            position: relative;
         }
 
         #wheelCanvas {
@@ -42,6 +33,8 @@
             color: white;
             cursor: pointer;
             border-radius: 5px;
+            position: absolute;
+            bottom: 20px; /* Position it near the bottom */
         }
 
         #spinButton:disabled {
@@ -54,10 +47,16 @@
             font-weight: bold;
             text-align: center;
         }
+
+        #countdown {
+            font-size: 18px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <div id="arrow"></div>
+    <div id="countdown"></div>
     <canvas id="wheelCanvas"></canvas>
     <button id="spinButton" onclick="spinWheel()">Spin the Wheel!</button>
     <div id="result"></div>
@@ -89,6 +88,7 @@
         const maxSpins = 3;
         const cooldownTime = 60 * 60 * 1000; // 1 hour in milliseconds
         let cooldownTimeout = null;
+        let countdownInterval = null;
         const secretCode = "SecretCode123";
         const canvas = document.getElementById("wheelCanvas");
         const ctx = canvas.getContext("2d");
@@ -187,11 +187,30 @@
 
         function disableSpinButton() {
             document.getElementById("spinButton").disabled = true;
+            startCountdown(cooldownTime);
+
             // Set a cooldown to reset spins after 1 hour
             cooldownTimeout = setTimeout(() => {
                 spinCount = 0;
                 document.getElementById("spinButton").disabled = false;
+                clearInterval(countdownInterval);
+                document.getElementById("countdown").textContent = "You can spin again!";
             }, cooldownTime);
+        }
+
+        // Countdown timer
+        function startCountdown(duration) {
+            let timeLeft = duration / 1000; // convert milliseconds to seconds
+            countdownInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById("countdown").textContent = `Next spin in: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                timeLeft--;
+
+                if (timeLeft < 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
         }
 
         drawWheel();
