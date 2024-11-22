@@ -33,7 +33,7 @@
             color: white;
             cursor: pointer;
             border-radius: 5px;
-            position: absolute;
+            position: centre;
             bottom: 20px; /* Position it near the bottom */
         }
 
