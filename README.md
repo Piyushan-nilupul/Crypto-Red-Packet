@@ -1,78 +1,63 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
-import 'dart:math';
+import 'package:flutter/services.dart';
 
-void main() {
-  runApp(SpinWheelApp());
-}
+void main() => runApp(MyApp());
 
-class SpinWheelApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Spin Wheel App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: SpinWheelPage(),
+      home: SecretBoxesPage(),
     );
   }
 }
 
-class SpinWheelPage extends StatefulWidget {
-  @override
-  _SpinWheelPageState createState() => _SpinWheelPageState();
-}
-
-class _SpinWheelPageState extends State<SpinWheelPage> {
-  // Spin Wheel සදහා Item List එකක් නිර්මාණය කරන්න
-  final List<String> items = [
-    'Prize 1',
-    'Prize 2',
-    'Prize 3',
-    'Prize 4',
-    'Prize 5',
-    'Prize 6',
+class SecretBoxesPage extends StatelessWidget {
+  final List<String> secrets = [
+    'Secret 1: Flutter Rocks!',
+    'Secret 2: Dart is awesome!',
+    'Secret 3: Mobile Development is Fun!',
+    'Secret 4: Keep Learning!',
+    'Secret 5: Flutter is Cross-Platform!',
+    'Secret 6: Always Code!',
+    'Secret 7: Stay Motivated!',
+    'Secret 8: Never Stop Exploring!',
+    'Secret 9: Write Clean Code!'
   ];
 
-  // Randomly එකක් තෝරාගැනීම සදහා
-  int selected = 0;
+  void copyToClipboard(String secret) {
+    Clipboard.setData(ClipboardData(text: secret));
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Spin Wheel App'),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          FortuneWheel(
-            selected: Stream.value(selected),
-            items: [
-              for (var item in items)
-                FortuneItem(
-                  child: Text(item),
-                ),
-            ],
-            onAnimationEnd: () {
-              // Spin Wheel එක අවසන් වූ විට විමසන්න
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Congratulations! You won: ${items[selected]}')),
-              );
+      appBar: AppBar(title: Text('Click a Box for a Secret')),
+      body: GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3, // 3 boxes in each row
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+        itemCount: secrets.length,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () {
+              copyToClipboard(secrets[index]);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Copied: ${secrets[index]}'),
+              ));
             },
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              // Spin Wheel එකක් තවත් වරක් හරවන්න
-              setState(() {
-                selected = Random().nextInt(items.length);
-              });
-            },
-            child: Text('Spin'),
-          ),
-        ],
+            child: Container(
+              alignment: Alignment.center,
+              color: Colors.blueAccent,
+              child: Text(
+                'Box ${index + 1}',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
