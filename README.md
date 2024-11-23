@@ -1,42 +1,59 @@
-import random
-import tkinter as tk
+import flash.display.MovieClip;
+import flash.events.MouseEvent;
+import flash.utils.Timer;
+import flash.events.TimerEvent;
 
-class LuckyWheel:
-    def __init__(self, master):
-        self.master = master
-        self.master.title("Lucky Wheel")
-        
-        self.canvas = tk.Canvas(master, width=400, height=400)
-        self.canvas.pack()
-        
-        self.segments = ["$100", "$200", "$300", "$400", "$500", "Lose a Turn", "Bankrupt"]
-        self.angle = 0
-        self.wheel = self.create_wheel()
-        
-        self.spin_button = tk.Button(master, text="Spin the Wheel", command=self.spin)
-        self.spin_button.pack()
-        
-    def create_wheel(self):
-        wheel = []
-        for i, segment in enumerate(self.segments):
-            start_angle = i * (360 / len(self.segments))
-            end_angle = (i + 1) * (360 / len(self.segments))
-            wheel.append((start_angle, end_angle, segment))
-            self.canvas.create_arc(50, 50, 350, 350, start=start_angle, extent=(end_angle - start_angle), fill=self.get_color(i), outline="black")
-            self.canvas.create_text(200, 200, text=segment, angle=start_angle + (end_angle - start_angle) / 2, fill="white")
-        return wheel
+class LuckyWheel extends MovieClip {
+    private var wheel:MovieClip;
+    private var spinning:Boolean = false;
+    private var spinTimer:Timer;
+    private var spinDuration:int = 3000; // 3 seconds
+    private var spinAngle:int = 0;
 
-    def get_color(self, index):
-        colors = ["red", "blue", "green", "yellow", "orange", "purple", "pink"]
-        return colors[index % len(colors)]
+    public function LuckyWheel() {
+        wheel = new MovieClip();
+        addChild(wheel);
+        drawWheel();
+        this.addEventListener(MouseEvent.CLICK, startSpin);
+    }
 
-    def spin(self):
-        self.angle = random.randint(0, 360)
-        self.canvas.delete("all")
-        self.create_wheel()
-        self.canvas.create_arc(50, 50, 350, 350, start=self.angle, extent=360, fill="black", outline="black")
+    private function drawWheel():void {
+        // Draw the wheel segments
+        for (var i:int = 0; i < 8; i++) {
+            var segment:MovieClip = new MovieClip();
+            segment.graphics.beginFill(Math.random() * 0xFFFFFF);
+            segment.graphics.moveTo(0, 0);
+            segment.graphics.lineTo(100, 0);
+            segment.graphics.lineTo(100, 100);
+            segment.graphics.lineTo(0, 100);
+            segment.graphics.endFill();
+            segment.rotation = i * 45; // 360 / 8 segments
+            wheel.addChild(segment);
+        }
+        wheel.x = stage.stageWidth / 2;
+        wheel.y = stage.stageHeight / 2;
+    }
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    lucky_wheel = LuckyWheel(root)
-    root.mainloop()
+    private function startSpin(event:MouseEvent):void {
+        if (!spinning) {
+            spinning = true;
+            spinAngle = Math.random() * 360 + 720; // Random angle + 2 full spins
+            spinTimer = new Timer(100);
+            spinTimer.addEventListener(TimerEvent.TIMER, spinWheel);
+            spinTimer.start();
+            setTimeout(stopSpin, spinDuration);
+        }
+    }
+
+    private function spinWheel(event:TimerEvent):void {
+        wheel.rotation += 10; // Spin speed
+    }
+
+    private function stopSpin():void {
+        spinTimer.stop();
+        spinTimer.removeEventListener(TimerEvent.TIMER, spinWheel);
+        spinning = false;
+        wheel.rotation = wheel.rotation % 360; // Normalize rotation
+        trace("Wheel stopped at: " + wheel.rotation);
+    }
+}
