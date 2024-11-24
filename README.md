@@ -3,128 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customized Lucky Wheel</title>
+    <title>Lucky Box Game with Crypto Ticker</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 60vh;
-            margin: 0;
             font-family: Arial, sans-serif;
-            flex-direction: column;
-            background-color: #FFFFFF; /* Background color specified */
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 0;
+            padding: 0;
         }
-
-        #wheel {
-            width: 250px;
-            height: 250px;
-            border-radius: 50%;
-            border: 3px solid #333;
-            position: relative;
+        /* Ticker container styling */
+        .ticker-container {
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
             overflow: hidden;
-            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1); /* Shadow enabled */
+            white-space: nowrap;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .ticker {
+            display: inline-block;
+            animation: scroll 20s linear infinite;
+        }
+        /* Crypto animation */
+        @keyframes scroll {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+        h1 {
+            margin-top: 20px;
+            color: #333;
+        }
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columns for 3x3 grid */
+            gap: 10px; /* Space between boxes */
+            justify-content: center;
+            margin-top: 40px;
+            max-width: 200px; /* Limit the container width to make it look neat */
+            margin-left: auto; /* Center align horizontally */
+            margin-right: auto; /* Center align horizontally */
+        }
+        .box {
+            width: 60px;  /* Adjusted box size */
+            height: 60px;
+            background-color: #007bff;
+            border: 2px solid #0056b3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+        }
+        .box:hover {
+            transform: scale(1.1);
+        }
+        .box.lucky {
+            background-color: #28a745;
+            border-color: #1e7e34;
+            animation: bounce 0.8s ease;
+        }
+        .box.unlucky {
+            background-color: #dc3545;
+            border-color: #c82333;
+            animation: shake 0.5s ease;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #555;
+        }
+        #timer {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #ff0000;
         }
 
-        .segment {
-            position: absolute;
-            width: 50%;
-            height: 50%;
-            background-color: #f1f1f1;
-            transform-origin: 100% 100%;
-            clip-path: polygon(0 0, 100% 0, 100% 100%);
-        }
-
-        #spinButton {
+        /* Button styling */
+        .signup-button {
             margin-top: 20px;
             padding: 10px 20px;
             font-size: 16px;
+            color: white;
+            background-color: #f0b90b; /* Binance yellow */
+            border: none;
             cursor: pointer;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .signup-button:hover {
+            background-color: #d79a09; /* Darker shade on hover */
+        }
+
+        /* Bounce animation for winning */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Shake animation for losing */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
         }
     </style>
 </head>
 <body>
-    <h1>Ba</h1> <!-- Title specified in JSON -->
-    <div id="wheel"></div>
-    <button id="spinButton">Spin</button>
-    <audio id="spinSound" src="ticking-sound.mp3"></audio>
-    <audio id="winSound" src="applause-sound-soft.mp3"></audio>
+    <!-- Crypto ticker as headline -->
+    <div class="ticker-container">
+        <div class="ticker">
+            🚀 Bitcoin (BTC) | 🌕 Ethereum (ETH) | 🌐 Binance Coin (BNB) | 💎 Ripple (XRP) | 
+            📉 Cardano (ADA) | 🔥 Solana (SOL) | 🌀 Polkadot (DOT) | 🎯 Dogecoin (DOGE) | 
+            💰 Litecoin (LTC) | 🌟 Chainlink (LINK)
+        </div>
+    </div>
+
+    <h1>Lucky Box Game</h1>
+    
+    <!-- Game Container -->
+    <div class="game-container" id="gameContainer">
+        <!-- Boxes will be generated here by JavaScript -->
+    </div>
+    <div class="message" id="message"></div>
+    <div id="timer"></div>
+
+    <!-- Note below the boxes -->
+    <h2>
+        a<br>
+        B<br>
+        C<br>
+        D
+    </h2>
+
+    <!-- Sign Up Button -->
+    <a href="https://www.binance.com" target="_blank" class="signup-button">Sign Up on Binance</a>
 
     <script>
-        const wheel = document.getElementById('wheel');
-        const spinButton = document.getElementById('spinButton');
-        const spinSound = document.getElementById('spinSound');
-        const winSound = document.getElementById('winSound');
+        const totalBoxes = 9;
+        let luckyBoxIndex = Math.floor(Math.random() * totalBoxes);
+        const gameContainer = document.getElementById('gameContainer');
+        const messageElement = document.getElementById('message');
+        const timerElement = document.getElementById('timer');
 
-        const segmentColors = [
-            '#3369E8', '#D50F25', '#EEB211', '#009925'
-        ]; // Only enabled colors used
-        const segmentLabels = ['Ali', 'Beatriz', 'Charles', 'Diya', 'Eric', 'Fatima', 'Hanna'];
-        const segmentCount = segmentLabels.length;
-        const segmentAngle = 360 / segmentCount;
-        let currentRotation = 0;
+        let attempts = 0;
+        const maxAttempts = 3;
+        let isGameDisabled = false;
+        const cooldownTime = 10 * 60 * 1000; // 10 minutes in milliseconds
+        let cooldownEndTime;
 
-        // Sound settings
-        spinSound.volume = 0.5; // 50% volume for during spin sound
-        winSound.volume = 0.5;   // 50% volume for after spin sound
+        // Secret word
+        const secretWord = "Congratulations! Your Secret Word is 'CryptoLuck'";
 
-        // Create wheel segments
-        function createSegments() {
-            for (let i = 0; i < segmentCount; i++) {
-                const segment = document.createElement('div');
-                segment.classList.add('segment');
-                segment.style.backgroundColor = segmentColors[i % segmentColors.length];
-                segment.style.transform = `rotate(${i * segmentAngle}deg)`;
-                wheel.appendChild(segment);
+        // Function to create the boxes
+        function createBoxes() {
+            gameContainer.innerHTML = ''; // Clear existing boxes
+            messageElement.textContent = ''; // Clear message
+            timerElement.textContent = ''; // Clear timer
 
-                // Add label
-                const label = document.createElement('div');
-                label.style.position = 'absolute';
-                label.style.top = '50%';
-                label.style.left = '50%';
-                label.style.transform = `rotate(${segmentAngle / 2}deg) translate(-50%, -50%) rotate(-${i * segmentAngle + segmentAngle / 2}deg)`;
-                label.style.fontSize = '14px';
-                label.style.textAlign = 'center';
-                label.style.color = '#FFFFFF'; // Text color for contrast
-                label.innerText = segmentLabels[i];
-                segment.appendChild(label);
+            for (let i = 0; i < totalBoxes; i++) {
+                const box = document.createElement('div');
+                box.classList.add('box');
+                box.textContent = '?';
+                box.addEventListener('click', () => checkBox(i, box));
+                gameContainer.appendChild(box);
             }
         }
 
-        // Spin the wheel
-        function spinWheel() {
-            const randomAngle = Math.floor(Math.random() * 360) + 1080; // 1080° ensures at least 3 full spins
-            currentRotation += randomAngle;
-            wheel.style.transition = 'transform 10s ease-out'; // 10 seconds spin time
-            wheel.style.transform = `rotate(${currentRotation}deg)`;
-            
-            // Play during spin sound
-            spinSound.play();
+        // Function to check if the clicked box is the lucky one
+        function checkBox(index, box) {
+            if (isGameDisabled) return;
 
-            // Display result after spinning
-            setTimeout(() => {
-                spinSound.pause();
-                spinSound.currentTime = 0;
+            if (index === luckyBoxIndex) {
+                box.classList.add('lucky');
+                box.textContent = '🎉';
+                messageElement.textContent = 'Congratulations! You found the lucky box!';
+                messageElement.style.color = 'green';
+                
+                // Display secret word in a popup
+                alert(secretWord);
+                
+                // Automatically restart the game after win
+                setTimeout(restartGame, 2000);
+            } else {
+                box.classList.add('unlucky');
+                box.textContent = '❌';
+                attempts++;
 
-                // Launch confetti (if implemented)
-                if (true) {
-                    alert('Confetti effect here!');
+                if (attempts >= maxAttempts) {
+                    messageElement.textContent = 'No more attempts! Please wait 10 minutes.';
+                    messageElement.style.color = 'red';
+                    startCooldown();
+                    endGame();
+                } else {
+                    messageElement.textContent = `Try Again! Attempts left: ${maxAttempts - attempts}`;
+                    messageElement.style.color = 'red';
                 }
-
-                // Play win sound
-                winSound.play();
-
-                const winningSegmentIndex = Math.floor(((currentRotation % 360) / segmentAngle)) % segmentCount;
-                const winningLabel = segmentLabels[winningSegmentIndex];
-
-                // Display winner dialog
-                alert(`Congratulations! You won: ${winningLabel}`);
-            }, 10000); // Wait for the animation to complete
+            }
         }
 
-        // Initialize segments and add event listener for spin button
-        createSegments();
-        spinButton.addEventListener('click', spinWheel);
+        // Function to end the game
+        function endGame() {
+            // Disable all boxes after the game ends
+            const boxes = document.querySelectorAll('.box');
+            boxes.forEach(box => {
+                box.style.pointerEvents = 'none';
+            });
+        }
+
+        // Start the cooldown timer
+        function startCooldown() {
+            isGameDisabled = true;
+            cooldownEndTime = Date.now() + cooldownTime;
+            updateTimer();
+            const cooldownInterval = setInterval(() => {
+                if (!updateTimer()) {
+                    clearInterval(cooldownInterval);
+                }
+            }, 1000);
+        }
+
+        // Update the timer countdown
+        function updateTimer() {
+            const remainingTime = cooldownEndTime - Date.now();
+            if (remainingTime > 0) {
+                const minutes = Math.floor(remainingTime / 60000);
+                const seconds = Math.floor((remainingTime % 60000) / 1000);
+                timerElement.textContent = `Cooldown: ${minutes}m ${seconds}s remaining`;
+                return true;
+            } else {
+                timerElement.textContent = '';
+                isGameDisabled = false;
+                attempts = 0;
+                createBoxes(); // Restart the game
+                return false;
+            }
+        }
+
+        // Restart game function
+        function restartGame() {
+            luckyBoxIndex = Math.floor(Math.random() * totalBoxes); // Choose a new lucky box
+            attempts = 0; // Reset attempts
+            createBoxes(); // Re-create the boxes
+        }
+
+        // Initialize game
+        createBoxes();
     </script>
 </body>
 </html>
