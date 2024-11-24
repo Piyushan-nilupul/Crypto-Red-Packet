@@ -1,107 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucky Wheel</title>
-    <style>
-        /* CSS for the Lucky Wheel */
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-            margin: 0;
-        }
+import tkinter as tk
+import random
+from math import pi, cos, sin
 
-        .container {
-            text-align: center;
-        }
+# Lucky Wheel එක සඳහා GUI එක නිර්මාණය කිරීම
+class LuckyWheel:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Lucky Wheel")
+        self.canvas = tk.Canvas(root, width=400, height=400)
+        self.canvas.pack()
 
-        .wheel {
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            border: 16px solid #4CAF50;
-            position: relative;
-            overflow: hidden;
-            transition: transform 4s cubic-bezier(0.5, 0.1, 0.3, 1);
-        }
+        # කොටස් 8ක් නිර්මාණය කිරීම
+        self.segments = [
+            {"label": "Prize 1", "color": "#FF5733"},
+            {"label": "Prize 2", "color": "#33FF57"},
+            {"label": "Prize 3", "color": "#3357FF"},
+            {"label": "Prize 4", "color": "#FF33A8"},
+            {"label": "Prize 5", "color": "#A833FF"},
+            {"label": "Prize 6", "color": "#FFA833"},
+            {"label": "Prize 7", "color": "#33FFA8"},
+            {"label": "Prize 8", "color": "#FF5733"}
+        ]
+        self.draw_wheel()
 
-        .segment {
-            position: absolute;
-            width: 50%;
-            height: 50%;
-            background-color: #f9c74f;
-            text-align: center;
-            line-height: 150px; /* Adjust line height based on wheel size */
-            font-size: 24px;
-            color: white;
-            transform-origin: 100% 100%; /* Key for making the segments fit correctly */
-        }
+        # Button එකක් නිර්මාණය කරන්න
+        self.spin_button = tk.Button(root, text="Spin", command=self.spin_wheel)
+        self.spin_button.pack(pady=20)
 
-        /* Adjust the rotation for each segment */
-        .segment:nth-child(1) { transform: rotate(0deg) skewY(-45deg); background-color: #f94144; }
-        .segment:nth-child(2) { transform: rotate(45deg) skewY(-45deg); background-color: #f3722c; }
-        .segment:nth-child(3) { transform: rotate(90deg) skewY(-45deg); background-color: #f9844a; }
-        .segment:nth-child(4) { transform: rotate(135deg) skewY(-45deg); background-color: #f9c74f; }
-        .segment:nth-child(5) { transform: rotate(180deg) skewY(-45deg); background-color: #90be6d; }
-        .segment:nth-child(6) { transform: rotate(225deg) skewY(-45deg); background-color: #43aa8b; }
-        .segment:nth-child(7) { transform: rotate(270deg) skewY(-45deg); background-color: #577590; }
-        .segment:nth-child(8) { transform: rotate(315deg) skewY(-45deg); background-color: #f9c74f; }
+    def draw_wheel(self):
+        self.canvas.delete("all")
+        center_x, center_y = 200, 200
+        radius = 150
+        angle_per_segment = 2 * pi / len(self.segments)
 
-        #spinButton {
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
+        for i, segment in enumerate(self.segments):
+            start_angle = i * angle_per_segment
+            end_angle = (i + 1) * angle_per_segment
 
-        #result {
-            font-size: 20px;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div id="wheel" class="wheel">
-            <div class="segment">1</div>
-            <div class="segment">2</div>
-            <div class="segment">3</div>
-            <div class="segment">4</div>
-            <div class="segment">5</div>
-            <div class="segment">6</div>
-            <div class="segment">7</div>
-            <div class="segment">8</div>
-        </div>
-        <button id="spinButton">Spin the Wheel!</button>
-        <div id="result"></div>
-    </div>
+            x0 = center_x + radius * cos(start_angle)
+            y0 = center_y - radius * sin(start_angle)
+            x1 = center_x + radius * cos(end_angle)
+            y1 = center_y - radius * sin(end_angle)
 
-    <script>
-        // JavaScript to make the wheel spin
-        document.getElementById('spinButton').addEventListener('click', spinWheel);
+            self.canvas.create_arc(
+                center_x - radius, center_y - radius, 
+                center_x + radius, center_y + radius,
+                start=start_angle * 180 / pi,
+                extent=angle_per_segment * 180 / pi,
+                fill=segment["color"], outline="black"
+            )
 
-        function spinWheel() {
-            const wheel = document.getElementById('wheel');
-            const randomDegree = Math.floor(Math.random() * 360 + 3600); // Spin multiple times (10+ full rotations)
-            wheel.style.transition = 'transform 4s cubic-bezier(0.5, 0.1, 0.3, 1)'; // Smooth transition for 4 seconds
-            wheel.style.transform = `rotate(${randomDegree}deg)`;
-            
-            // Calculate the result after the spin completes
-            const resultDegree = randomDegree % 360; // Get the final degree after multiple rotations
-            setTimeout(() => {
-                const segmentIndex = Math.floor(resultDegree / 45); // 8 segments (each 45 degrees)
-                document.getElementById('result').innerText = `You landed on segment ${segmentIndex + 1}!`;
+            # Label එකක් එක් කරන්න
+            mid_angle = (start_angle + end_angle) / 2
+            label_x = center_x + (radius / 2) * cos(mid_angle)
+            label_y = center_y - (radius / 2) * sin(mid_angle)
+            self.canvas.create_text(label_x, label_y, text=segment["label"], font=("Helvetica", 10))
 
-                // Reset the transition for the next spin
-                wheel.style.transition = 'none';
-            }, 4000); // Wait for the spin to finish (4 seconds)
-        }
-    </script>
-</body>
-</html>
+    def spin_wheel(self):
+        # Randomව කුමන කැල්ලක් ජයග්‍රහණයද යන්න තෝරාගන්න
+        winner = random.choice(self.segments)
+        tk.messagebox.showinfo("Congratulations!", f"You won: {winner['label']}")
+
+# Main window එක ආරම්භ කිරීම
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = LuckyWheel(root)
+    root.mainloop()
