@@ -129,10 +129,8 @@
 <body>
     <!-- Crypto ticker as headline -->
     <div class="ticker-container">
-        <div class="ticker">
-            🚀 Bitcoin (BTC) | 🌕 Ethereum (ETH) | 🌐 Binance Coin (BNB) | 💎 Ripple (XRP) | 
-            📉 Cardano (ADA) | 🔥 Solana (SOL) | 🌀 Polkadot (DOT) | 🎯 Dogecoin (DOGE) | 
-            💰 Litecoin (LTC) | 🌟 Chainlink (LINK)
+        <div class="ticker" id="cryptoTicker">
+            Loading crypto prices...
         </div>
     </div>
 
@@ -145,14 +143,6 @@
     <div class="message" id="message"></div>
     <div id="timer"></div>
 
-    <!-- Note below the boxes -->
-    <h2>
-        a<br>
-        B<br>
-        C<br>
-        D
-    </h2>
-
     <!-- Sign Up Button -->
     <a href="https://www.binance.com" target="_blank" class="signup-button">Sign Up on Binance</a>
 
@@ -162,6 +152,7 @@
         const gameContainer = document.getElementById('gameContainer');
         const messageElement = document.getElementById('message');
         const timerElement = document.getElementById('timer');
+        const cryptoTicker = document.getElementById('cryptoTicker');
 
         let attempts = 0;
         const maxAttempts = 3;
@@ -208,12 +199,12 @@
                 attempts++;
 
                 if (attempts >= maxAttempts) {
-                    messageElement.textContent = 'No more attempts! Please wait 10 minutes.';
+                    messageElement.textContent = 'Please come back later.';
                     messageElement.style.color = 'red';
                     startCooldown();
                     endGame();
                 } else {
-                    messageElement.textContent = `Try Again! Attempts left: ${maxAttempts - attempts}`;
+                    messageElement.textContent = `Try Again!: ${maxAttempts - attempts}`;
                     messageElement.style.color = 'red';
                 }
             }
@@ -264,8 +255,18 @@
             createBoxes(); // Re-create the boxes
         }
 
-        // Initialize game
-        createBoxes();
-    </script>
-</body>
-</html>
+        // Function to fetch top 10 crypto prices
+        async function fetchCryptoPrices() {
+            try {
+                const response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false');
+                const data = await response.json();
+                const tickerText = data.map(coin => `${coin.name} (${coin.symbol.toUpperCase()}): $${coin.current_price}`).join(' | ');
+                cryptoTicker.textContent = tickerText;
+            } catch (error) {
+                cryptoTicker.textContent = 'Failed to load crypto prices.';
+                console.error('Error fetching crypto prices:', error);
+            }
+        }
+
+        // Fetch crypto prices every 10 seconds
+        setInterval(fetchCryptoPrices
