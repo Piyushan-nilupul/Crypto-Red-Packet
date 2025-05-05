@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Red Packet Grid Game</title>
+  <script>
+    // JavaScript logic for random secret word from localStorage
+    let allWords = [
+      'Try again', 'Try again', 'Try again',
+      'Try again', 'Try again', 'Try again',
+      'Try again', 'Try again', 'congratulation! Your Code A11FVZ6J'
+    ];
+
+    if (!localStorage.getItem('shuffledWords')) {
+      allWords.sort(() => Math.random() - 0.5);
+      localStorage.setItem('shuffledWords', JSON.stringify(allWords));
+    } else {
+      allWords = JSON.parse(localStorage.getItem('shuffledWords'));
+    }
+  </script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0d0d0d;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    /* ...styles omitted for brevity (they're the same as user provided)... */
+  </style>
+</head>
+<body>
+
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <div class="ticker-item">Bitcoin (BTC): $64,000</div>
+      <div class="ticker-item">Ethereum (ETH): $3,200</div>
+      <div class="ticker-item">BNB: $550</div>
+      <div class="ticker-item">Solana (SOL): $150</div>
+      <div class="ticker-item">XRP: $0.65</div>
+      <div class="ticker-item">Cardano (ADA): $0.55</div>
+      <div class="ticker-item">Dogecoin (DOGE): $0.15</div>
+      <div class="ticker-item">Avalanche (AVAX): $50</div>
+      <div class="ticker-item">Polkadot (DOT): $7</div>
+      <div class="ticker-item">Tron (TRX): $0.12</div>
+    </div>
+  </div>
+
+  <h1 class="header">Limited Crypto Lucky Red Pocket!!</h1>
+  <div class="grid" id="grid"></div>
+  <div id="messageBox"></div>
+
+  <h2 class="sub-header">▫️How to Claim▫️</h2>
+  <div class="note">
+    <p>▫️ Among these 9 packets, 1 packet has a lucky word.<br>
+      ▫️ Note down the lucky word.<br>
+      ▫️ Open the Binance app.<br>
+      ▫️ Go to Pay > Red Packet.<br>
+      ▫️ Tap "Receive".<br>
+      ▫️ Paste the secret code.<br>
+      ▫️ Claim your crypto Red Packet.
+    </p>
+  </div>
+
+  <h3 class="sub-header3">▫️If you don't have Binance Account▫️</h3>
+  <div class="futuristic-border">
+    <a href="https://accounts.binance.com/register?ref=PZI36S9A" target="_blank" class="signup-text">Sign Up</a>
+  </div>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const secretWords = allWords;
+    let openCount = 0;
+    const maxOpen = 2;
+    const foundWords = [];
+
+    secretWords.forEach((word) => {
+      const envelope = document.createElement('div');
+      envelope.className = 'envelope glow';
+      envelope.innerHTML = `
+        <div class="flap-container">
+          <div class="flap">
+            <div class="seal">福</div>
+          </div>
+        </div>
+        <div class="content">${word}</div>
+      `;
+      envelope.addEventListener('click', function () {
+        if (envelope.classList.contains('open') || openCount >= maxOpen) return;
+
+        envelope.classList.add('open');
+        envelope.classList.remove('glow');
+        openCount++;
+        foundWords.push(word);
+
+        if (openCount === maxOpen) {
+          setTimeout(() => {
+            document.querySelectorAll('.envelope').forEach(env => {
+              if (!env.classList.contains('open')) {
+                env.style.pointerEvents = 'none';
+                env.style.opacity = '0.5';
+              }
+            });
+
+            const msg = document.getElementById('messageBox');
+            if (foundWords.some(w => w.includes('congratulation'))) {
+              msg.textContent = `Congratulation!!`;
+            } else {
+              msg.textContent = `Please try again later.`;
+            }
+          }, 800);
+        }
+      });
+      grid.appendChild(envelope);
+    });
+  </script>
+
+</body>
+</html>
